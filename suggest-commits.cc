@@ -8,6 +8,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <vector>
 using namespace std;
 
 const char HOOK_PROGRAM[] = ".git/hooks/prepare-commit-msg";
@@ -34,13 +35,19 @@ void prepare()
         exit(1);
     }
 
-    string cmd = string("git diff --cached > ") + path;
+    string cmd = string("git diff -b --cached > ") + path;
     int rc = system(cmd.c_str());
     if (rc != 0) {
         cerr << "unable to get diff: " << rc << endl;
         exit(1);
     }
 
+    ifstream in(path);
+    string line;
+
+    while (getline(in, line)) {
+        cout << line << endl;
+    }
 }
 
 int main(int argc, char *argv[])

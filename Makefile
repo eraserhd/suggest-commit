@@ -16,4 +16,9 @@ install: all
 clean:
 	rm -f config.h suggest-commits
 
-.PHONY: all clean install
+test: suggest-commits
+	./suggest-commits
+	git add -A
+	git ci
+
+.PHONY: all clean install test
