@@ -4,8 +4,8 @@ bin=$(prefix)/bin
 
 all: suggest-commits
 
-suggest-commits: suggest-commits.c config.h
-	$(CC) -o suggest-commits suggest-commits.c
+suggest-commits: suggest-commits.cc config.h
+	$(CXX) -o suggest-commits suggest-commits.cc
 
 config.h: Makefile
 	echo "#define BINARY_PATH \"$(bin)\"" > config.h
