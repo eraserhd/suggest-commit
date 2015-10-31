@@ -10,7 +10,7 @@
 #include <unistd.h>
 using namespace std;
 
-const char  HOOK_PROGRAM[] = ".git/hooks/prepare-commit-msg";
+const char HOOK_PROGRAM[] = ".git/hooks/prepare-commit-msg";
 
 void install()
 {
@@ -45,13 +45,13 @@ void prepare()
 
 int main(int argc, char *argv[])
 {
-	if (argc == 1)
-		install();
-	else if (argc > 2) {
-		/* We don't interfere with any of the "special" types, like
-		 * merges and squash commits, which have a second argument. */
-		exit(0);
-	} else
-		prepare();
-	exit(0);
+    if (argc == 1)
+        install();
+    else if (argc > 2) {
+        // We don't interfere with any of the "special" types, like
+        // merges and squash commits, which have a second argument. 
+        exit(0);
+    } else
+        prepare();
+    exit(0);
 }
