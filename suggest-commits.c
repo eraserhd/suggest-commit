@@ -42,9 +42,19 @@ void install()
 	fclose(out);
 }
 
+void prepare()
+{
+}
+
 int main(int argc, char *argv[])
 {
 	if (argc == 1)
 		install();
+	else if (argc > 2) {
+		/* We don't interfere with any of the "special" types, like
+		 * merges and squash commits, which have a second argument. */
+		exit(0);
+	} else
+		prepare();
 	exit(0);
 }
