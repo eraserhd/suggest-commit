@@ -8,6 +8,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <utility>
 #include <vector>
 using namespace std;
 
@@ -27,7 +28,7 @@ void install()
     chmod(HOOK_PROGRAM, 0755);
 }
 
-void prepare()
+pair<vector<string>, vector<string> > read_diff()
 {
     char path[64] = "/tmp/suggest.XXXXXX";
     if (NULL == mktemp(path)) {
@@ -44,10 +45,27 @@ void prepare()
 
     ifstream in(path);
     string line;
-
+    pair<vector<string>, vector<string> > result;
     while (getline(in, line)) {
-        cout << line << endl;
+        if (line.empty())
+            continue;
+
+        switch (line[0]) {
+        case '+':
+            result.first.push_back(line.substr(1));
+            break;
+        case '-':
+            result.second.push_back(line.substr(1));
+            break;
+        }
     }
+
+    return result;
+}
+
+void prepare()
+{
+    pair<vector<string>, vector<string> > diff = read_diff();
 }
 
 int main(int argc, char *argv[])
