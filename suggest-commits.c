@@ -44,6 +44,7 @@ void install()
 
 int main(int argc, char *argv[])
 {
-	install();
+	if (argc == 1)
+		install();
 	exit(0);
 }
