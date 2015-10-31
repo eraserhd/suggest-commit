@@ -1,45 +1,27 @@
 #include "config.h"
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
+#include <fstream>
+#include <string>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
+using namespace std;
 
-const char HOOK_PROGRAM[] = ".git/hooks/prepare-commit-msg";
+const char  HOOK_PROGRAM[] = ".git/hooks/prepare-commit-msg";
 
 void install()
 {
-	FILE *in, *out;
-	char buf[BUFSIZ];
-	size_t amount_read;
-	
-	if (!(in = fopen(BINARY_PATH "/suggest-commits", "rb"))) {
-		perror(BINARY_PATH "/suggest-commits");
-		exit(1);
-	}
-	if (!(out = fopen(HOOK_PROGRAM, "wb"))) {
-		perror(HOOK_PROGRAM);
-		exit(1);
-	}
+    ifstream in(BINARY_PATH "/suggest-commits", ios::in | ios::binary);
+    ofstream out(HOOK_PROGRAM, ios::out | ios::binary);
 
-	for (;;) {
-		amount_read = fread(buf, 1, sizeof(buf), in);
-		if (ferror(in)) {
-			perror("fread");
-			exit(1);
-		}
-		if (amount_read == 0)
-			break;
-		if (fwrite(buf, 1, amount_read, out) < amount_read) {
-			perror("fwrite");
-			exit(1);
-		}
-	}
+    char buf[BUFSIZ];
+    do {
+        in.read(buf, sizeof(buf));
+        out.write(buf, in.gcount());
+    } while (!in.eof() && !in.fail());
 
-	fclose(in);
-
-	fchmod(fileno(out), 0755);
-	fclose(out);
+    chmod(HOOK_PROGRAM, 0755);
 }
 
 void prepare()
