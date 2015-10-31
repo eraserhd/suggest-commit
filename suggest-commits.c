@@ -44,6 +44,15 @@ void install()
 
 void prepare()
 {
+	FILE *in = popen("git diff --cached", "r");
+	int rc;
+
+
+	rc = pclose(in);
+	if (rc != 0) {
+		fprintf(stderr, "error retrieving diff: %d\n", rc);
+		exit(1);
+	}
 }
 
 int main(int argc, char *argv[])
