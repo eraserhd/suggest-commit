@@ -1,7 +1,9 @@
 #include "config.h"
 #include <cstdio>
 #include <cstdlib>
+#include <cstring>
 #include <fstream>
+#include <iostream>
 #include <string>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -26,15 +28,19 @@ void install()
 
 void prepare()
 {
-	FILE *in = popen("git diff --cached", "r");
-	int rc;
+    char path[64] = "/tmp/suggest.XXXXXX";
+    if (NULL == mktemp(path)) {
+        perror("mktemp");
+        exit(1);
+    }
 
+    string cmd = string("git diff --cached > ") + path;
+    int rc = system(cmd.c_str());
+    if (rc != 0) {
+        cerr << "unable to get diff: " << rc << endl;
+        exit(1);
+    }
 
-	rc = pclose(in);
-	if (rc != 0) {
-		fprintf(stderr, "error retrieving diff: %d\n", rc);
-		exit(1);
-	}
 }
 
 int main(int argc, char *argv[])
