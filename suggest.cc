@@ -22,7 +22,7 @@ struct PosixSystemTraits {
         std::shared_ptr<std::ifstream> input_stream;
     };
 
-    static diff_iterators_type diff_iterators() {
+    diff_iterators_type diff_iterators() {
         std::string path = temporary_filename();
         std::string cmd = std::string("git diff -b --cached > ") + path;
         if (system(cmd.c_str()) != 0)
@@ -32,7 +32,7 @@ struct PosixSystemTraits {
     }
 
 private:
-    static std::string temporary_filename() {
+    std::string temporary_filename() {
         char path[64] = "/tmp/suggest.XXXXXX";
         if (NULL == mktemp(path))
             throw std::runtime_error("mktemp failed");
@@ -43,5 +43,5 @@ private:
 
 int main(int argc, char *argv[])
 {
-    return CommitSuggester<PosixSystemTraits>::main(argc, argv);
+    return CommitSuggester<PosixSystemTraits>().main(argc, argv);
 }

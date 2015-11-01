@@ -128,10 +128,10 @@ std::string test_name(std::string const& line)
 }
 
 template <class SystemTraits>
-struct CommitSuggester {
+struct CommitSuggester : SystemTraits {
     typedef typename SystemTraits::diff_iterators_type diff_iterators_type;
 
-    static void install()
+    void install()
     {
         std::ifstream in(BINARY_PATH "/suggest-commits", std::ios::in | std::ios::binary);
         std::ofstream out(HOOK_PROGRAM, std::ios::out | std::ios::binary);
@@ -145,13 +145,13 @@ struct CommitSuggester {
         chmod(HOOK_PROGRAM, 0755);
     }
 
-    static Diff read_diff()
+    Diff read_diff()
     {
         diff_iterators_type iterators = SystemTraits::diff_iterators();
         return Diff::parse(iterators.begin, iterators.end);
     }
 
-    static std::string best_added_test_name(Diff const& diff)
+    std::string best_added_test_name(Diff const& diff)
     {
         std::vector<std::string> deleted_tests;
         for (std::vector<std::string>::const_iterator it = diff.deletions.begin();
@@ -193,19 +193,19 @@ struct CommitSuggester {
         return best_name;
     }
 
-    static std::string suggest(Diff const& diff)
+    std::string suggest(Diff const& diff)
     {
         return best_added_test_name(diff);
     }
 
-    static void prepare()
+    void prepare()
     {
         Diff diff = read_diff();
 
         std::cerr << suggest(diff) << std::endl;
     }
 
-    static int main(int argc, char *argv[])
+    int main(int argc, char *argv[])
     {
         if (argc == 1)
             install();

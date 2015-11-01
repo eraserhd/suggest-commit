@@ -18,7 +18,7 @@ struct TestSystem {
         {}
     };
 
-    static diff_iterators_type diff_iterators() {
+    diff_iterators_type diff_iterators() {
         return diff_iterators_type(test_diff.begin(), test_diff.end());
     }
 };
@@ -45,7 +45,7 @@ public:
 "+};\n";
         char arg1[] = "prepare-commit-msg";
         char *argv[] = {arg1};
-        const int rc = CommitSuggester<TestSystem>::main(1, argv);
+        const int rc = CommitSuggester<TestSystem>().main(1, argv);
         TS_ASSERT_EQUALS(0, rc);
     }
 
