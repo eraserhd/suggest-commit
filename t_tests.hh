@@ -1,5 +1,5 @@
 #include <cxxtest/TestSuite.h>
-#include "suggest.h"
+#include "suggest.hh"
 
 class t_tests : public CxxTest::TestSuite {
 public:

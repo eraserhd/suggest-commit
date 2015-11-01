@@ -1,7 +1,7 @@
 #ifndef suggest_h_INCLUDED
 #define suggest_h_INCLUDED
 
-#include "config.h"
+#include "config.hh"
 #include <algorithm>
 #include <cctype>
 #include <cstdio>

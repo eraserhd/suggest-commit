@@ -1,5 +1,5 @@
 #include <cxxtest/TestSuite.h>
-#include "suggest.h"
+#include "suggest.hh"
 
 class t_edit_distance : public CxxTest::TestSuite
 {
