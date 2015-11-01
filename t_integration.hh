@@ -53,28 +53,43 @@ const char SIMPLE_CXXTEST_ADDITION[] =
 "+    }\n"
 "+};\n";
 
+struct Test {
+    Test& with_diff(std::string const& diff) {
+        suggester.test_diff = diff;
+        return *this;
+    }
+
+    std::string message() {
+        run();
+        return suggester.test_message;
+    }
+
+    int result_code() {
+        run();
+        return main_result;
+    }
+
+private:
+    CommitSuggester<TestSystem> suggester;
+    int main_result;
+
+    void run() {
+        char arg1[] = "prepare-commit-msg";
+        char arg2[] = ".git/foo";
+        char *argv[] = {arg1, arg2};
+        main_result = suggester.main(2, argv);
+    }
+};
+
 class t_integration : public CxxTest::TestSuite {
 public:
 
     void test_Has_non_zero_exit() {
-        CommitSuggester<TestSystem> suggester;
-        suggester.test_diff = SIMPLE_CXXTEST_ADDITION;
-        char arg1[] = "prepare-commit-msg";
-        char arg2[] = ".git/foo";
-        char *argv[] = {arg1, arg2};
-        const int rc = suggester.main(2, argv);
-        TS_ASSERT_EQUALS(0, rc);
+        TS_ASSERT_EQUALS(0, Test().with_diff(SIMPLE_CXXTEST_ADDITION).result_code());
     }
 
     void test_Suggests_obvious_cxxtest_fact() {
-        CommitSuggester<TestSystem> suggester;
-        suggester.test_diff = SIMPLE_CXXTEST_ADDITION;
-        char arg1[] = "prepare-commit-msg";
-        char arg2[] = ".git/foo";
-        char *argv[] = {arg1, arg2};
-        suggester.main(2, argv);
-
-        TS_ASSERT_EQUALS("foo\n#", suggester.test_message.substr(0, 5));
+        TS_ASSERT_EQUALS("foo\n#", Test().with_diff(SIMPLE_CXXTEST_ADDITION).message().substr(0, 5));
     }
 };
 
