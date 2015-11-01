@@ -1,6 +1,8 @@
 #include <cxxtest/TestSuite.h>
-#include "suggest.hh"
 #include <string>
+
+#define TESTING
+#include "suggest.cc"
 
 class t_integration : public CxxTest::TestSuite {
 public:

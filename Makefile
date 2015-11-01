@@ -4,7 +4,7 @@ bin=$(prefix)/bin
 
 all: test suggest-commit
 
-suggest-commit: suggest.cc suggest.hh
+suggest-commit: suggest.cc
 	$(CXX) -g -o suggest-commit suggest.cc
 
 install: all
@@ -16,7 +16,7 @@ clean:
 tests.cc: tests.hh
 	./cxxtest/bin/cxxtestgen --error-printer -o tests.cc tests.hh
 
-tests: tests.cc suggest.hh
+tests: tests.cc suggest.cc
 	$(CXX) -g -Icxxtest -o tests tests.cc
 
 test: tests
