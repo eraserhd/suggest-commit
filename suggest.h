@@ -1,10 +1,23 @@
 #ifndef suggest_h_INCLUDED
 #define suggest_h_INCLUDED
 
+#include "config.h"
 #include <algorithm>
-#include <string>
-#include <vector>
+#include <cctype>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <exception>
+#include <fstream>
+#include <iostream>
+#include <iterator>
 #include <regex>
+#include <string>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
+#include <utility>
+#include <vector>
 
 int edit_distance(std::string const& a, std::string const& b)
 {
@@ -47,5 +60,153 @@ std::string test_name(std::string const& line)
 
     return "";
 }
+
+const char HOOK_PROGRAM[] = ".git/hooks/prepare-commit-msg";
+
+struct Diff {
+    std::vector<std::string> additions;
+    std::vector<std::string> deletions;
+};
+
+struct CommitSuggester {
+
+    static void install()
+    {
+        std::ifstream in(BINARY_PATH "/suggest-commits", std::ios::in | std::ios::binary);
+        std::ofstream out(HOOK_PROGRAM, std::ios::out | std::ios::binary);
+
+        char buf[BUFSIZ];
+        do {
+            in.read(buf, sizeof(buf));
+            out.write(buf, in.gcount());
+        } while (!in.eof() && !in.fail());
+
+        chmod(HOOK_PROGRAM, 0755);
+    }
+
+    static std::string normalize_space(std::string const& line)
+    {
+        std::string::const_iterator begin = line.begin();
+        std::string::const_iterator end = line.end();
+        while (begin < end && isspace(*begin))
+            ++begin;
+
+        std::string result;
+        bool in_space = false;
+        for (; begin < end; ++begin) {
+            if (std::isspace(*begin)) {
+                in_space = true;
+                continue;
+            } else {
+                if (in_space) {
+                    result += ' ';
+                    in_space = false;
+                }
+
+                result += *begin;
+            }
+        }
+
+        return result;
+    }
+
+    static Diff read_diff()
+    {
+        char path[64] = "/tmp/suggest.XXXXXX";
+        if (NULL == mktemp(path)) {
+            perror("mktemp");
+            exit(1);
+        }
+
+        std::string cmd = std::string("git diff -b --cached > ") + path;
+        int rc = system(cmd.c_str());
+        if (rc != 0) {
+            std::cerr << "unable to get diff: " << rc << std::endl;
+            exit(1);
+        }
+
+        std::ifstream in(path);
+        std::string line;
+        Diff result;
+        while (std::getline(in, line)) {
+            if (line.empty())
+                continue;
+
+            switch (line[0]) {
+            case '+':
+                result.additions.push_back(normalize_space(line.substr(1)));
+                break;
+            case '-':
+                result.deletions.push_back(normalize_space(line.substr(1)));
+                break;
+            }
+        }
+
+        return result;
+    }
+
+    static std::string best_added_test_name(Diff const& diff)
+    {
+        std::vector<std::string> deleted_tests;
+        for (std::vector<std::string>::const_iterator it = diff.deletions.begin();
+             it != diff.deletions.end();
+             ++it)
+        {
+            std::string name = test_name(*it);
+            if (name != "")
+                deleted_tests.push_back(name);
+        }
+
+        std::string best_name = "";
+        int highest_distance = -1;
+
+        for (std::vector<std::string>::const_iterator it = diff.additions.begin();
+             it != diff.additions.end();
+             ++it)
+        {
+            std::string name = test_name(*it);
+            if (name.empty())
+                continue;
+
+            int lowest = 99999999;
+            for (std::vector<std::string>::const_iterator dptr = deleted_tests.begin();
+                 dptr != deleted_tests.end();
+                 ++dptr)
+            {
+                int d = edit_distance(name, *dptr);
+                if (d < lowest)
+                    lowest = d;
+            }
+
+            if (lowest > highest_distance) {
+                best_name = name;
+                highest_distance = lowest;
+            }
+        }
+
+        return best_name;
+    }
+
+    static void prepare()
+    {
+        Diff diff = read_diff();
+
+        std::cerr << best_added_test_name(diff) << std::endl;
+    }
+
+    static int main(int argc, char *argv[])
+    {
+        if (argc == 1)
+            install();
+        else if (argc > 2) {
+            // We don't interfere with any of the "special" types, like
+            // merges and squash commits, which have a second argument. 
+            return 0;
+        } else
+            prepare();
+        return 0;
+    }
+
+};
 
 #endif
