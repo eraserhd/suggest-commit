@@ -1,6 +1,7 @@
+#include "config.h"
+#include "suggest.h"
 #include <algorithm>
 #include <cctype>
-#include "config.h"
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -110,27 +111,6 @@ string test_name(string const& line)
         return matches.str(1);
 
     return "";
-}
-
-int distance(string const& a, string const& b)
-{
-    vector<vector<int> > dp(a.size()+1, vector<int>(b.size()+1, 0));
-
-    for (int i = 0; i <= a.size(); ++i)
-        dp[i][0] = i;
-    for (int j = 0; j <= b.size(); ++j)
-        dp[0][j] = j;
-    for (int i = 1; i <= a.size(); ++i)
-        for (int j = 1; j <= b.size(); ++j)
-            dp[i][j] = min(
-                    min(
-                        dp[i-1][j] + 1,
-                        dp[i][j-1] + 1
-                        ),
-                        dp[i-1][j-1] + (a[i-1] != b[j-1])
-                    );
-
-    return dp[a.size()][b.size()];
 }
 
 string best_added_test_name(Diff const& diff)
