@@ -36,12 +36,7 @@ struct TestSystem {
     }
 };
 
-class t_integration : public CxxTest::TestSuite {
-public:
-
-    void test_Has_non_zero_exit() {
-        CommitSuggester<TestSystem> suggester;
-        suggester.test_diff =
+const char SIMPLE_CXXTEST_ADDITION[] =
 "diff --git a/t_distance.h b/t_distance.h\n"
 "new file mode 100644\n"
 "index 0000000..7e4b821\n"
@@ -57,6 +52,13 @@ public:
 "+        TS_ASSERT(true);\n"
 "+    }\n"
 "+};\n";
+
+class t_integration : public CxxTest::TestSuite {
+public:
+
+    void test_Has_non_zero_exit() {
+        CommitSuggester<TestSystem> suggester;
+        suggester.test_diff = SIMPLE_CXXTEST_ADDITION;
         char arg1[] = "prepare-commit-msg";
         char arg2[] = ".git/foo";
         char *argv[] = {arg1, arg2};
@@ -66,22 +68,7 @@ public:
 
     void test_Suggests_obvious_cxxtest_fact() {
         CommitSuggester<TestSystem> suggester;
-        suggester.test_diff =
-"diff --git a/t_distance.h b/t_distance.h\n"
-"new file mode 100644\n"
-"index 0000000..7e4b821\n"
-"--- /dev/null\n"
-"+++ b/t_distance.h\n"
-"@@ -0,0 +1,9 @@\n"
-"+#include <cxxtest/TestSuite.h>\n"
-"+\n"
-"+class Test_distance : public Cx" "xTest::TestSuite\n"
-"+{\n"
-"+public:\n"
-"+    void te" "st_foo() {\n"
-"+        TS_ASSERT(true);\n"
-"+    }\n"
-"+};\n";
+        suggester.test_diff = SIMPLE_CXXTEST_ADDITION;
         char arg1[] = "prepare-commit-msg";
         char arg2[] = ".git/foo";
         char *argv[] = {arg1, arg2};
