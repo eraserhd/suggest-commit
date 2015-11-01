@@ -1,0 +1,26 @@
+#!/bin/sh
+
+# When the second (or third) arguments are present, we are doing something
+# weird (such as merging or amending) and we don't want to change or suggest a
+# commit message.
+if [ $# != 1 ]
+then
+	exit 0
+fi
+
+suggestion=`git diff -b --cached |suggest-commit`
+if [ $? -ne 0 ]
+then
+	# suggest-commit failed.  The user should see its error message after
+	# committing, so lets not abort.
+	exit 0
+fi
+
+if [ -z "$suggestion" ]
+then
+	exit 0 # Nothing to suggest
+fi
+
+exec sed -i '' -e "1c\\
+$suggestion
+" "$1"
