@@ -156,9 +156,7 @@ int main(int argc, char *argv[])
 {
     std::istreambuf_iterator<char> begin(std::cin);
     std::istreambuf_iterator<char> end;
-
-    std::string suggestion = CommitSuggester().suggest(begin, end);
-    std::cout << suggestion << std::endl;
+    std::cout << suggest(begin, end) << std::endl;
     return 0;
 }
 #endif
