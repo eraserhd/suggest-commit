@@ -24,5 +24,9 @@ public:
     void test_Suggests_obvious_cxxtest_fact() {
         TS_ASSERT_EQUALS("foo", CommitSuggester().suggest(SIMPLE_CXXTEST_ADDITION));
     }
+
+    void test_Detects_midje_facts() {
+        TS_ASSERT_EQUALS("midje is awesome!", test_name("\t (fact\"midje is awesome!\" "));
+    }
 };
 
