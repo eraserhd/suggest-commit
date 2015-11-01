@@ -24,6 +24,65 @@ const char HOOK_PROGRAM[] = ".git/hooks/prepare-commit-msg";
 struct Diff {
     std::vector<std::string> additions;
     std::vector<std::string> deletions;
+
+    template<class IteratorT>
+    static Diff parse(IteratorT begin, IteratorT end) {
+        std::string line;
+        Diff diff;
+
+        for (; begin != end; ++begin) {
+            if (*begin == '\n') {
+                add_line(diff, line);
+                line = "";
+            } else
+                line += *begin;
+        }
+        if (!line.empty())
+            add_line(diff, line);
+
+        return diff;
+    }
+
+private:
+    static std::string normalize_space(std::string const& line)
+    {
+        std::string::const_iterator begin = line.begin();
+        std::string::const_iterator end = line.end();
+        while (begin < end && isspace(*begin))
+            ++begin;
+
+        std::string result;
+        bool in_space = false;
+        for (; begin < end; ++begin) {
+            if (std::isspace(*begin)) {
+                in_space = true;
+                continue;
+            } else {
+                if (in_space) {
+                    result += ' ';
+                    in_space = false;
+                }
+
+                result += *begin;
+            }
+        }
+
+        return result;
+    }
+
+    static void add_line(Diff& diff, std::string const& line) {
+        if (line.empty())
+            return;
+
+        switch (line[0]) {
+        case '+':
+            diff.additions.push_back(normalize_space(line.substr(1)));
+            break;
+        case '-':
+            diff.deletions.push_back(normalize_space(line.substr(1)));
+            break;
+        }
+    }
 };
 
 int edit_distance(std::string const& a, std::string const& b)
@@ -86,63 +145,10 @@ struct CommitSuggester {
         chmod(HOOK_PROGRAM, 0755);
     }
 
-    static std::string normalize_space(std::string const& line)
-    {
-        std::string::const_iterator begin = line.begin();
-        std::string::const_iterator end = line.end();
-        while (begin < end && isspace(*begin))
-            ++begin;
-
-        std::string result;
-        bool in_space = false;
-        for (; begin < end; ++begin) {
-            if (std::isspace(*begin)) {
-                in_space = true;
-                continue;
-            } else {
-                if (in_space) {
-                    result += ' ';
-                    in_space = false;
-                }
-
-                result += *begin;
-            }
-        }
-
-        return result;
-    }
-
-    static void add_line(Diff& diff, std::string const& line) {
-        if (line.empty())
-            return;
-
-        switch (line[0]) {
-        case '+':
-            diff.additions.push_back(normalize_space(line.substr(1)));
-            break;
-        case '-':
-            diff.deletions.push_back(normalize_space(line.substr(1)));
-            break;
-        }
-    }
-
     static Diff read_diff()
     {
         diff_iterators_type iterators = SystemTraits::diff_iterators();
-        std::string line;
-        Diff diff;
-
-        for (; iterators.begin != iterators.end; ++iterators.begin) {
-            if (*iterators.begin == '\n') {
-                add_line(diff, line);
-                line = "";
-            } else
-                line += *iterators.begin;
-        }
-        if (!line.empty())
-            add_line(diff, line);
-
-        return diff;
+        return Diff::parse(iterators.begin, iterators.end);
     }
 
     static std::string best_added_test_name(Diff const& diff)
