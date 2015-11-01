@@ -9,7 +9,6 @@
 #include <fstream>
 #include <iostream>
 #include <iterator>
-#include <regex>
 #include <string>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -100,17 +99,6 @@ Diff read_diff()
     }
 
     return result;
-}
-
-string test_name(string const& line)
-{
-    static const regex midje_fact("\\s*\\(fact\\s*\"(.*)\"\\s*");
-
-    smatch matches;
-    if (regex_match(line, matches, midje_fact))
-        return matches.str(1);
-
-    return "";
 }
 
 string best_added_test_name(Diff const& diff)

@@ -3,6 +3,7 @@
 
 #include <string>
 #include <vector>
+#include <regex>
 
 int edit_distance(std::string const& a, std::string const& b)
 {
@@ -23,6 +24,17 @@ int edit_distance(std::string const& a, std::string const& b)
                     );
 
     return dp[a.size()][b.size()];
+}
+
+std::string test_name(std::string const& line)
+{
+    static const std::regex midje_fact("\\s*\\(fact\\s*\"(.*)\"\\s*");
+
+    std::smatch matches;
+    if (std::regex_match(line, matches, midje_fact))
+        return matches.str(1);
+
+    return "";
 }
 
 #endif
