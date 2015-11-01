@@ -19,6 +19,13 @@
 #include <utility>
 #include <vector>
 
+const char HOOK_PROGRAM[] = ".git/hooks/prepare-commit-msg";
+
+struct Diff {
+    std::vector<std::string> additions;
+    std::vector<std::string> deletions;
+};
+
 int edit_distance(std::string const& a, std::string const& b)
 {
     std::vector<std::vector<int> > dp(a.size()+1, std::vector<int>(b.size()+1, 0));
@@ -60,13 +67,6 @@ std::string test_name(std::string const& line)
 
     return "";
 }
-
-const char HOOK_PROGRAM[] = ".git/hooks/prepare-commit-msg";
-
-struct Diff {
-    std::vector<std::string> additions;
-    std::vector<std::string> deletions;
-};
 
 struct CommitSuggester {
 
