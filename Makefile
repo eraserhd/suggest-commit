@@ -2,8 +2,6 @@
 prefix=/usr/local
 bin=$(prefix)/bin
 
-test_HEADERS = $(wildcard t_*.hh)
-
 all: test suggest-commit
 
 suggest-commit: suggest.cc suggest.hh
@@ -15,8 +13,8 @@ install: all
 clean:
 	rm -rf suggest-commit tests.cc tests *.dSYM
 
-tests.cc: $(test_HEADERS)
-	./cxxtest/bin/cxxtestgen --error-printer -o tests.cc $(test_HEADERS)
+tests.cc: tests.hh
+	./cxxtest/bin/cxxtestgen --error-printer -o tests.cc tests.hh
 
 tests: tests.cc suggest.hh
 	$(CXX) -g -Icxxtest -o tests tests.cc

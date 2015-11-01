@@ -1,6 +1,3 @@
-#ifndef suggest_h_INCLUDED
-#define suggest_h_INCLUDED
-
 #include <algorithm>
 #include <cctype>
 #include <cstdio>
@@ -156,5 +153,3 @@ std::string suggest(std::string const& diff)
 {
     return suggest(diff.begin(), diff.end());
 }
-
-#endif
