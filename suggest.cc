@@ -29,8 +29,10 @@ void add_line(std::string const& line) {
     }
 }
 
-template<class IteratorT>
-static void parse(IteratorT begin, IteratorT end) {
+void parse_diff()
+{
+    std::istreambuf_iterator<char> begin(std::cin);
+    std::istreambuf_iterator<char> end;
     std::string line;
 
     for (; begin != end; ++begin) {
@@ -134,17 +136,9 @@ std::string suggest()
     return best_added_test_name();
 }
 
-template<class IteratorT>
-std::string suggest(IteratorT begin, IteratorT end)
-{
-    parse(begin, end);
-    return suggest();
-}
-
 int main(int argc, char *argv[])
 {
-    std::istreambuf_iterator<char> begin(std::cin);
-    std::istreambuf_iterator<char> end;
-    std::cout << suggest(begin, end) << std::endl;
+    parse_diff();
+    std::cout << suggest() << std::endl;
     return 0;
 }
