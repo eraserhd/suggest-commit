@@ -15,35 +15,20 @@
 std::vector<std::string> additions;
 std::vector<std::string> deletions;
 
-void add_line(std::string const& line) {
-    if (line.empty())
-        return;
-
-    switch (line[0]) {
-    case '+':
-        additions.push_back(line.substr(1));
-        break;
-    case '-':
-        deletions.push_back(line.substr(1));
-        break;
-    }
-}
-
 void parse_diff()
 {
-    std::istreambuf_iterator<char> begin(std::cin);
-    std::istreambuf_iterator<char> end;
-    std::string line;
+    char line[256];
 
-    for (; begin != end; ++begin) {
-        if (*begin == '\n') {
-            add_line(line);
-            line = "";
-        } else
-            line += *begin;
+    while (NULL != fgets(line, sizeof(line), stdin)) {
+        switch (line[0]) {
+        case '+':
+            additions.push_back(line+1);
+            break;
+        case '-':
+            deletions.push_back(line+1);
+            break;
+        }
     }
-    if (!line.empty())
-        add_line(line);
 }
 
 int edit_distance(const char* a, const char* b)
