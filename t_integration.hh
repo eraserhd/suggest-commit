@@ -43,7 +43,8 @@ public:
 "+        TS_ASSERT(true);\n"
 "+    }\n"
 "+};\n";
-        char *argv[] = {"prepare-commit-msg"};
+        char arg1[] = "prepare-commit-msg";
+        char *argv[] = {arg1};
         const int rc = CommitSuggester<TestSystem>::main(1, argv);
         TS_ASSERT_EQUALS(0, rc);
     }
