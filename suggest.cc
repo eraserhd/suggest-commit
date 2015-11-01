@@ -46,25 +46,38 @@ void parse_diff()
         add_line(line);
 }
 
-int edit_distance(std::string const& a, std::string const& b)
+int edit_distance(const char* a, const char* b)
 {
-    std::vector<std::vector<int> > dp(a.size()+1, std::vector<int>(b.size()+1, 0));
+    int alen = strlen(a);
+    int blen = strlen(b);
+    int *dp = (int *)malloc(sizeof(int) * (alen + 1) * (blen + 1));
+    int result, tmp;
 
-    for (int i = 0; i <= a.size(); ++i)
-        dp[i][0] = i;
-    for (int j = 0; j <= b.size(); ++j)
-        dp[0][j] = j;
-    for (int i = 1; i <= a.size(); ++i)
-        for (int j = 1; j <= b.size(); ++j)
-            dp[i][j] = std::min(
-                    std::min(
-                            dp[i-1][j] + 1,
-                            dp[i][j-1] + 1
-                        ),
-                        dp[i-1][j-1] + (a[i-1] != b[j-1])
-                    );
+    memset(dp, 0, sizeof(int) * (alen + 1) * (blen + 1));
 
-    return dp[a.size()][b.size()];
+#define CELL(i,j) dp[((i)*(alen+1)+(j))]
+    for (int i = 0; i <= alen; ++i)
+        CELL(i,0) = i;
+    for (int j = 0; j <= blen; ++j)
+        CELL(0,j) = j;
+    for (int i = 1; i <= alen; ++i)
+        for (int j = 1; j <= blen; ++j) {
+            CELL(i,j) = CELL(i-1,j) + 1;
+
+            tmp = CELL(j,i-1) + 1;
+            if (tmp < CELL(i,j))
+                CELL(i,j) = tmp;
+
+            tmp = CELL(i-1,j-1) + (a[i-1] != b[j-1]);
+            if (tmp < CELL(i,j))
+                CELL(i,j) = tmp;
+        }
+
+    result = CELL(alen, blen);
+#undef CELL
+
+    free(dp);
+    return result;
 }
 
 std::string decode_JUnit_style_name(std::string const& name)
@@ -117,7 +130,7 @@ std::string best_added_test_name()
              dptr != deleted_tests.end();
              ++dptr)
         {
-            int d = edit_distance(name, *dptr);
+            int d = edit_distance(name.c_str(), dptr->c_str());
             if (d < lowest)
                 lowest = d;
         }
