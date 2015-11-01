@@ -22,7 +22,7 @@ const std::string SIMPLE_CXXTEST_ADDITION =
 class t_integration : public CxxTest::TestSuite {
 public:
     void test_Suggests_obvious_cxxtest_fact() {
-        TS_ASSERT_EQUALS("foo", CommitSuggester().suggest(SIMPLE_CXXTEST_ADDITION));
+        TS_ASSERT_EQUALS("foo", suggest(SIMPLE_CXXTEST_ADDITION));
     }
 
     void test_Detects_midje_facts() {

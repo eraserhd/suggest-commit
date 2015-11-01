@@ -41,42 +41,16 @@ struct Diff {
     }
 
 private:
-    static std::string normalize_space(std::string const& line)
-    {
-        std::string::const_iterator begin = line.begin();
-        std::string::const_iterator end = line.end();
-        while (begin < end && isspace(*begin))
-            ++begin;
-
-        std::string result;
-        bool in_space = false;
-        for (; begin < end; ++begin) {
-            if (std::isspace(*begin)) {
-                in_space = true;
-                continue;
-            } else {
-                if (in_space) {
-                    result += ' ';
-                    in_space = false;
-                }
-
-                result += *begin;
-            }
-        }
-
-        return result;
-    }
-
     static void add_line(Diff& diff, std::string const& line) {
         if (line.empty())
             return;
 
         switch (line[0]) {
         case '+':
-            diff.additions.push_back(normalize_space(line.substr(1)));
+            diff.additions.push_back(line.substr(1));
             break;
         case '-':
-            diff.deletions.push_back(normalize_space(line.substr(1)));
+            diff.deletions.push_back(line.substr(1));
             break;
         }
     }
@@ -124,67 +98,63 @@ std::string test_name(std::string const& line)
     return "";
 }
 
-struct CommitSuggester {
-
-    std::string best_added_test_name(Diff const& diff)
+std::string best_added_test_name(Diff const& diff)
+{
+    std::vector<std::string> deleted_tests;
+    for (std::vector<std::string>::const_iterator it = diff.deletions.begin();
+         it != diff.deletions.end();
+         ++it)
     {
-        std::vector<std::string> deleted_tests;
-        for (std::vector<std::string>::const_iterator it = diff.deletions.begin();
-             it != diff.deletions.end();
-             ++it)
+        std::string name = test_name(*it);
+        if (name != "")
+            deleted_tests.push_back(name);
+    }
+
+    std::string best_name = "";
+    int highest_distance = -1;
+
+    for (std::vector<std::string>::const_iterator it = diff.additions.begin();
+         it != diff.additions.end();
+         ++it)
+    {
+        std::string name = test_name(*it);
+        if (name.empty())
+            continue;
+
+
+        int lowest = 99999999;
+        for (std::vector<std::string>::const_iterator dptr = deleted_tests.begin();
+             dptr != deleted_tests.end();
+             ++dptr)
         {
-            std::string name = test_name(*it);
-            if (name != "")
-                deleted_tests.push_back(name);
+            int d = edit_distance(name, *dptr);
+            if (d < lowest)
+                lowest = d;
         }
 
-        std::string best_name = "";
-        int highest_distance = -1;
-
-        for (std::vector<std::string>::const_iterator it = diff.additions.begin();
-             it != diff.additions.end();
-             ++it)
-        {
-            std::string name = test_name(*it);
-            if (name.empty())
-                continue;
-
-
-            int lowest = 99999999;
-            for (std::vector<std::string>::const_iterator dptr = deleted_tests.begin();
-                 dptr != deleted_tests.end();
-                 ++dptr)
-            {
-                int d = edit_distance(name, *dptr);
-                if (d < lowest)
-                    lowest = d;
-            }
-
-            if (lowest > highest_distance) {
-                best_name = name;
-                highest_distance = lowest;
-            }
+        if (lowest > highest_distance) {
+            best_name = name;
+            highest_distance = lowest;
         }
-
-        return best_name;
     }
 
-    std::string suggest(Diff const& diff)
-    {
-        return best_added_test_name(diff);
-    }
+    return best_name;
+}
 
-    template<class IteratorT>
-    std::string suggest(IteratorT begin, IteratorT end)
-    {
-        return suggest(Diff::parse(begin, end));
-    }
+std::string suggest(Diff const& diff)
+{
+    return best_added_test_name(diff);
+}
 
-    std::string suggest(std::string const& diff)
-    {
-        return suggest(diff.begin(), diff.end());
-    }
+template<class IteratorT>
+std::string suggest(IteratorT begin, IteratorT end)
+{
+    return suggest(Diff::parse(begin, end));
+}
 
-};
+std::string suggest(std::string const& diff)
+{
+    return suggest(diff.begin(), diff.end());
+}
 
 #endif
