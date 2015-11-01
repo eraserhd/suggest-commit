@@ -18,11 +18,11 @@ install: all
 clean:
 	rm -f config.h suggest-commits
 
-tests.cpp: $(test_HEADERS)
-	./cxxtest/bin/cxxtestgen --error-printer -o tests.cpp $(test_HEADERS)
+tests.cc: $(test_HEADERS)
+	./cxxtest/bin/cxxtestgen --error-printer -o tests.cc $(test_HEADERS)
 
-tests: tests.cpp
-	$(CXX) -Icxxtest -o tests tests.cpp
+tests: tests.cc
+	$(CXX) -Icxxtest -o tests tests.cc
 
 test: tests
 	./tests
