@@ -1,7 +1,6 @@
 #ifndef suggest_h_INCLUDED
 #define suggest_h_INCLUDED
 
-#include "config.hh"
 #include <algorithm>
 #include <cctype>
 #include <cstdio>
@@ -18,8 +17,6 @@
 #include <unistd.h>
 #include <utility>
 #include <vector>
-
-const char HOOK_PROGRAM[] = ".git/hooks/prepare-commit-msg";
 
 struct Diff {
     std::vector<std::string> additions;

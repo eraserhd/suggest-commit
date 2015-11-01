@@ -4,24 +4,21 @@ bin=$(prefix)/bin
 
 test_HEADERS = $(wildcard t_*.hh)
 
-all: test suggest-commits
+all: test suggest-commit
 
-suggest-commits: suggest.cc suggest.hh config.hh
-	$(CXX) -g -o suggest-commits suggest.cc
-
-config.hh: Makefile
-	echo "#define BINARY_PATH \"$(bin)\"" > config.hh
+suggest-commit: suggest.cc suggest.hh
+	$(CXX) -g -o suggest-commit suggest.cc
 
 install: all
-	install -m 0755 suggest-commits $(bin)/
+	install -m 0755 suggest-commit $(bin)/
 
 clean:
-	rm -rf config.h suggest-commits tests.cc tests *.dSYM
+	rm -rf suggest-commit tests.cc tests *.dSYM
 
 tests.cc: $(test_HEADERS)
 	./cxxtest/bin/cxxtestgen --error-printer -o tests.cc $(test_HEADERS)
 
-tests: tests.cc suggest.hh config.hh
+tests: tests.cc suggest.hh
 	$(CXX) -g -Icxxtest -o tests tests.cc
 
 test: tests

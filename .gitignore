@@ -1,5 +1,4 @@
-/suggest-commits
-/config.hh
+/suggest-commit
 /tests.cc
 /tests
 *.dSYM

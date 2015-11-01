@@ -1,6 +1,6 @@
-# suggest-commits
+# suggest-commit
 
-Prepopulate commit message for common cases.
+Suggest a commit message from a diff.
 
 ## Installing
 
@@ -10,6 +10,6 @@ Clone this repository, then:
 
 Once in the repository where you would like commits suggested:
 
-    suggest-commits
+    git diff |suggest-commit
 
 And you are done!
