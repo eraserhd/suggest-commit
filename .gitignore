@@ -2,3 +2,4 @@
 /config.hh
 /tests.cc
 /tests
+*.dSYM

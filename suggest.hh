@@ -70,6 +70,7 @@ std::string test_name(std::string const& line)
 
 template <class SystemTraits>
 struct CommitSuggester {
+    typedef typename SystemTraits::diff_iterators_type diff_iterators_type;
 
     static void install()
     {
@@ -111,39 +112,37 @@ struct CommitSuggester {
         return result;
     }
 
+    static void add_line(Diff& diff, std::string const& line) {
+        if (line.empty())
+            return;
+
+        switch (line[0]) {
+        case '+':
+            diff.additions.push_back(normalize_space(line.substr(1)));
+            break;
+        case '-':
+            diff.deletions.push_back(normalize_space(line.substr(1)));
+            break;
+        }
+    }
+
     static Diff read_diff()
     {
-        char path[64] = "/tmp/suggest.XXXXXX";
-        if (NULL == mktemp(path)) {
-            perror("mktemp");
-            exit(1);
-        }
-
-        std::string cmd = std::string("git diff -b --cached > ") + path;
-        int rc = system(cmd.c_str());
-        if (rc != 0) {
-            std::cerr << "unable to get diff: " << rc << std::endl;
-            exit(1);
-        }
-
-        std::ifstream in(path);
+        diff_iterators_type iterators = SystemTraits::diff_iterators();
         std::string line;
-        Diff result;
-        while (std::getline(in, line)) {
-            if (line.empty())
-                continue;
+        Diff diff;
 
-            switch (line[0]) {
-            case '+':
-                result.additions.push_back(normalize_space(line.substr(1)));
-                break;
-            case '-':
-                result.deletions.push_back(normalize_space(line.substr(1)));
-                break;
-            }
+        for (; iterators.begin != iterators.end; ++iterators.begin) {
+            if (*iterators.begin == '\n') {
+                add_line(diff, line);
+                line = "";
+            } else
+                line += *iterators.begin;
         }
+        if (!line.empty())
+            add_line(diff, line);
 
-        return result;
+        return diff;
     }
 
     static std::string best_added_test_name(Diff const& diff)
