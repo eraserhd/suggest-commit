@@ -9,33 +9,7 @@
 #include "suggest.hh"
 
 struct PosixSystemTraits {
-    typedef std::istreambuf_iterator<char> diff_iterator_type;
-
-    struct diff_iterators_type {
-        diff_iterator_type begin;
-        diff_iterator_type end;
-
-        diff_iterators_type(std::shared_ptr<std::ifstream> const& input_stream)
-            : input_stream(input_stream)
-            , begin(*input_stream)
-            , end()
-        {}
-
-    private:
-        std::shared_ptr<std::ifstream> input_stream;
-    };
-
-    diff_iterators_type message_iterators(std::string const& filename) {
-        std::shared_ptr<std::ifstream> input_stream(new std::ifstream(filename.c_str()));
-        return diff_iterators_type(input_stream);
-    }
-
-    std::string diff_contents() {
-        std::string path = temporary_filename();
-        std::string cmd = std::string("git diff -b --cached > ") + path;
-        if (system(cmd.c_str()) != 0)
-            throw std::runtime_error("git diff command failed");
-        
+    std::string file_contents(std::string const& filename) {
         std::ifstream in(path.c_str());
         std::istreambuf_iterator<char> begin(in);
         std::istreambuf_iterator<char> end;
@@ -43,6 +17,15 @@ struct PosixSystemTraits {
         std::string contents;
         copy(begin, end, back_inserter(contents));
         return contents; 
+    }
+
+    std::string diff_contents() {
+        std::string path = temporary_filename();
+        std::string cmd = std::string("git diff -b --cached > ") + path;
+        if (system(cmd.c_str()) != 0)
+            throw std::runtime_error("git diff command failed");
+
+        return file_contents(path);
     }
 
     void write_message(std::string const& filename, std::string const& message) {

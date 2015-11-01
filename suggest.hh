@@ -129,7 +129,6 @@ std::string test_name(std::string const& line)
 
 template <class SystemTraits>
 struct CommitSuggester : SystemTraits {
-    typedef typename SystemTraits::diff_iterators_type diff_iterators_type;
 
     void install()
     {
@@ -204,12 +203,9 @@ struct CommitSuggester : SystemTraits {
         Diff diff = read_diff();
         std::string suggestion = suggest(diff);
 
-        diff_iterators_type iterators = SystemTraits::message_iterators(message_filename);
-        while (iterators.begin != iterators.end && *iterators.begin != '#')
-            ++iterators.begin;
-
-        std::string bottom;
-        copy(iterators.begin, iterators.end, back_inserter(bottom));
+        std::string bottom = SystemTraits::file_contents(message_filename);
+        std::string::size_type hash_offset = bottom.find('#');
+        bottom.erase(bottom.begin(), bottom.begin() + hash_offset);
 
         SystemTraits::write_message(message_filename, suggestion + "\n" + bottom);
     }
