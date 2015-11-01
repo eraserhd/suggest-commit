@@ -127,28 +127,7 @@ std::string test_name(std::string const& line)
     return "";
 }
 
-template <class SystemTraits>
-struct CommitSuggester : SystemTraits {
-
-    void install()
-    {
-        std::ifstream in(BINARY_PATH "/suggest-commits", std::ios::in | std::ios::binary);
-        std::ofstream out(HOOK_PROGRAM, std::ios::out | std::ios::binary);
-
-        char buf[BUFSIZ];
-        do {
-            in.read(buf, sizeof(buf));
-            out.write(buf, in.gcount());
-        } while (!in.eof() && !in.fail());
-
-        chmod(HOOK_PROGRAM, 0755);
-    }
-
-    Diff read_diff()
-    {
-        std::string diff = SystemTraits::diff_contents();
-        return Diff::parse(diff.begin(), diff.end());
-    }
+struct CommitSuggester {
 
     std::string best_added_test_name(Diff const& diff)
     {
@@ -198,28 +177,15 @@ struct CommitSuggester : SystemTraits {
         return best_added_test_name(diff);
     }
 
-    void prepare(std::string const& message_filename)
+    template<class IteratorT>
+    std::string suggest(IteratorT begin, IteratorT end)
     {
-        Diff diff = read_diff();
-        std::string suggestion = suggest(diff);
-
-        std::string bottom = SystemTraits::file_contents(message_filename);
-        std::string::size_type hash_offset = bottom.find('#');
-        bottom.erase(bottom.begin(), bottom.begin() + hash_offset);
-
-        SystemTraits::write_message(message_filename, suggestion + "\n" + bottom);
+        return suggest(Diff::parse(begin, end));
     }
 
-    int main(int argc, char *argv[])
+    std::string suggest(std::string const& diff)
     {
-        if (argc == 1)
-            install();
-        else if (argc == 2)
-            prepare(argv[1]);
-        else {
-            // "special" type, do nothing
-        }
-        return 0;
+        return suggest(diff.begin(), diff.end());
     }
 
 };
