@@ -147,8 +147,8 @@ struct CommitSuggester : SystemTraits {
 
     Diff read_diff()
     {
-        diff_iterators_type iterators = SystemTraits::diff_iterators();
-        return Diff::parse(iterators.begin, iterators.end);
+        std::string diff = SystemTraits::diff_contents();
+        return Diff::parse(diff.begin(), diff.end());
     }
 
     std::string best_added_test_name(Diff const& diff)

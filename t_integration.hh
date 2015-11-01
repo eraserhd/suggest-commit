@@ -27,8 +27,8 @@ struct TestSystem {
         return diff_iterators_type(test_message.begin(), test_message.end());
     }
 
-    diff_iterators_type diff_iterators() {
-        return diff_iterators_type(test_diff.begin(), test_diff.end());
+    std::string diff_contents() {
+        return test_diff;
     }
 
     void write_message(std::string const& filename, std::string const& message) {
