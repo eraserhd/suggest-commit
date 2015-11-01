@@ -116,7 +116,7 @@ std::string decode_JUnit_style_name(std::string const& name)
 std::string test_name(std::string const& line)
 {
     static const std::regex midje_fact("\\s*\\(fact\\s*\"(.*)\"\\s*");
-    static const std::regex cxxtest_fact("\\s*void\\s+test_?([A-Za-z0-9_]+)\\s*\\(\\s*\\)\\s*");
+    static const std::regex cxxtest_fact("\\s*void\\s+test_?([A-Za-z0-9_]+)\\s*\\(\\s*\\)\\s*\\{?\\s*");
 
     std::smatch matches;
     if (std::regex_match(line, matches, midje_fact))
@@ -174,6 +174,7 @@ struct CommitSuggester : SystemTraits {
             if (name.empty())
                 continue;
 
+
             int lowest = 99999999;
             for (std::vector<std::string>::const_iterator dptr = deleted_tests.begin();
                  dptr != deleted_tests.end();
@@ -198,23 +199,30 @@ struct CommitSuggester : SystemTraits {
         return best_added_test_name(diff);
     }
 
-    void prepare()
+    void prepare(std::string const& message_filename)
     {
         Diff diff = read_diff();
+        std::string suggestion = suggest(diff);
 
-        std::cerr << suggest(diff) << std::endl;
+        diff_iterators_type iterators = SystemTraits::message_iterators(message_filename);
+        while (iterators.begin != iterators.end && *iterators.begin != '#')
+            ++iterators.begin;
+
+        std::string bottom;
+        copy(iterators.begin, iterators.end, back_inserter(bottom));
+
+        SystemTraits::write_message(message_filename, suggestion + "\n" + bottom);
     }
 
     int main(int argc, char *argv[])
     {
         if (argc == 1)
             install();
-        else if (argc > 2) {
-            // We don't interfere with any of the "special" types, like
-            // merges and squash commits, which have a second argument. 
-            return 0;
-        } else
-            prepare();
+        else if (argc == 2)
+            prepare(argv[1]);
+        else {
+            // "special" type, do nothing
+        }
         return 0;
     }
 

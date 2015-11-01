@@ -1,5 +1,6 @@
 #include <cstdlib>
 #include <fstream>
+#include <iostream>
 #include <stdexcept>
 #include <string>
 #include <utility>
@@ -22,13 +23,23 @@ struct PosixSystemTraits {
         std::shared_ptr<std::ifstream> input_stream;
     };
 
+    diff_iterators_type message_iterators(std::string const& filename) {
+        std::shared_ptr<std::ifstream> input_stream(new std::ifstream(filename.c_str()));
+        return diff_iterators_type(input_stream);
+    }
+
     diff_iterators_type diff_iterators() {
         std::string path = temporary_filename();
         std::string cmd = std::string("git diff -b --cached > ") + path;
         if (system(cmd.c_str()) != 0)
             throw std::runtime_error("git diff command failed");
-        std::shared_ptr<std::ifstream> input_stream(new std::ifstream(path));
-        return diff_iterators_type(input_stream);
+        return message_iterators(path);
+    }
+
+    void write_message(std::string const& filename, std::string const& message) {
+        std::ofstream out(filename.c_str());
+        out << message << std::flush;
+        out.close();
     }
 
 private:
