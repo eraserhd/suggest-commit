@@ -146,11 +146,6 @@ std::string suggest(IteratorT begin, IteratorT end)
     return suggest(Diff::parse(begin, end));
 }
 
-std::string suggest(std::string const& diff)
-{
-    return suggest(diff.begin(), diff.end());
-}
-
 int main(int argc, char *argv[])
 {
     std::istreambuf_iterator<char> begin(std::cin);
