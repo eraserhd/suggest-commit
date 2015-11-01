@@ -151,7 +151,6 @@ std::string suggest(std::string const& diff)
     return suggest(diff.begin(), diff.end());
 }
 
-#if !defined(TESTING)
 int main(int argc, char *argv[])
 {
     std::istreambuf_iterator<char> begin(std::cin);
@@ -159,4 +158,3 @@ int main(int argc, char *argv[])
     std::cout << suggest(begin, end) << std::endl;
     return 0;
 }
-#endif

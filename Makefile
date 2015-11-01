@@ -13,13 +13,13 @@ install: all
 clean:
 	rm -rf suggest-commit tests.cc tests *.dSYM
 
-tests.cc: tests.hh
-	./cxxtest/bin/cxxtestgen --error-printer -o tests.cc tests.hh
-
-tests: tests.cc suggest.cc
-	$(CXX) -g -Icxxtest -o tests tests.cc
-
-test: tests
-	./tests
+test: suggest-commit
+	@for t in t/*; do \
+	  if ./$$t; then \
+	    printf 'ok %s.\n' "$$t"; \
+	  else \
+	    printf 'FAILED %s.\n' "$$t"; \
+	  fi; \
+	done
 
 .PHONY: all clean install test
