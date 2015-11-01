@@ -12,4 +12,12 @@ public:
     void test_Scores_deletions_as_1() {
         TS_ASSERT_EQUALS(1, edit_distance("foo", "fo"));
     }
+
+    void test_Scores_additions_as_1() {
+        TS_ASSERT_EQUALS(1, edit_distance("foo", "foxo"));
+    }
+
+    void test_Scores_changes_as_1() {
+        TS_ASSERT_EQUALS(1, edit_distance("foo", "fxo"));
+    }
 };
