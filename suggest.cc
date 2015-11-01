@@ -12,43 +12,37 @@
 #include <utility>
 #include <vector>
 
-struct Diff {
-    std::vector<std::string> additions;
-    std::vector<std::string> deletions;
+std::vector<std::string> additions;
+std::vector<std::string> deletions;
 
-    template<class IteratorT>
-    static Diff parse(IteratorT begin, IteratorT end) {
-        std::string line;
-        Diff diff;
+void add_line(std::string const& line) {
+    if (line.empty())
+        return;
 
-        for (; begin != end; ++begin) {
-            if (*begin == '\n') {
-                add_line(diff, line);
-                line = "";
-            } else
-                line += *begin;
-        }
-        if (!line.empty())
-            add_line(diff, line);
-
-        return diff;
+    switch (line[0]) {
+    case '+':
+        additions.push_back(line.substr(1));
+        break;
+    case '-':
+        deletions.push_back(line.substr(1));
+        break;
     }
+}
 
-private:
-    static void add_line(Diff& diff, std::string const& line) {
-        if (line.empty())
-            return;
+template<class IteratorT>
+static void parse(IteratorT begin, IteratorT end) {
+    std::string line;
 
-        switch (line[0]) {
-        case '+':
-            diff.additions.push_back(line.substr(1));
-            break;
-        case '-':
-            diff.deletions.push_back(line.substr(1));
-            break;
-        }
+    for (; begin != end; ++begin) {
+        if (*begin == '\n') {
+            add_line(line);
+            line = "";
+        } else
+            line += *begin;
     }
-};
+    if (!line.empty())
+        add_line(line);
+}
 
 int edit_distance(std::string const& a, std::string const& b)
 {
@@ -92,11 +86,11 @@ std::string test_name(std::string const& line)
     return "";
 }
 
-std::string best_added_test_name(Diff const& diff)
+std::string best_added_test_name()
 {
     std::vector<std::string> deleted_tests;
-    for (std::vector<std::string>::const_iterator it = diff.deletions.begin();
-         it != diff.deletions.end();
+    for (std::vector<std::string>::const_iterator it = deletions.begin();
+         it != deletions.end();
          ++it)
     {
         std::string name = test_name(*it);
@@ -107,8 +101,8 @@ std::string best_added_test_name(Diff const& diff)
     std::string best_name = "";
     int highest_distance = -1;
 
-    for (std::vector<std::string>::const_iterator it = diff.additions.begin();
-         it != diff.additions.end();
+    for (std::vector<std::string>::const_iterator it = additions.begin();
+         it != additions.end();
          ++it)
     {
         std::string name = test_name(*it);
@@ -135,15 +129,16 @@ std::string best_added_test_name(Diff const& diff)
     return best_name;
 }
 
-std::string suggest(Diff const& diff)
+std::string suggest()
 {
-    return best_added_test_name(diff);
+    return best_added_test_name();
 }
 
 template<class IteratorT>
 std::string suggest(IteratorT begin, IteratorT end)
 {
-    return suggest(Diff::parse(begin, end));
+    parse(begin, end);
+    return suggest();
 }
 
 int main(int argc, char *argv[])
