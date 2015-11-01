@@ -193,11 +193,16 @@ struct CommitSuggester {
         return best_name;
     }
 
+    static std::string suggest(Diff const& diff)
+    {
+        return best_added_test_name(diff);
+    }
+
     static void prepare()
     {
         Diff diff = read_diff();
 
-        std::cerr << best_added_test_name(diff) << std::endl;
+        std::cerr << suggest(diff) << std::endl;
     }
 
     static int main(int argc, char *argv[])
