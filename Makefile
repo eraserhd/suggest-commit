@@ -21,7 +21,7 @@ clean:
 tests.cc: $(test_HEADERS)
 	./cxxtest/bin/cxxtestgen --error-printer -o tests.cc $(test_HEADERS)
 
-tests: tests.cc
+tests: tests.cc suggest.h config.h
 	$(CXX) -Icxxtest -o tests tests.cc
 
 test: tests
