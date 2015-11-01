@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 
-int distance(std::string const& a, std::string const& b)
+int edit_distance(std::string const& a, std::string const& b)
 {
     std::vector<std::vector<int> > dp(a.size()+1, std::vector<int>(b.size()+1, 0));
 

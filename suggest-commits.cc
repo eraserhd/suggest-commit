@@ -141,7 +141,7 @@ string best_added_test_name(Diff const& diff)
              dptr != deleted_tests.end();
              ++dptr)
         {
-            int d = distance(name, *dptr);
+            int d = edit_distance(name, *dptr);
             if (d < lowest)
                 lowest = d;
         }
