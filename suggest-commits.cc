@@ -133,11 +133,8 @@ int distance(string const& a, string const& b)
     return dp[a.size()][b.size()];
 }
 
-void prepare()
+string best_added_test_name(Diff const& diff)
 {
-    Diff diff = read_diff();
-
-
     vector<string> deleted_tests;
     for (vector<string>::const_iterator it = diff.deletions.begin();
          it != diff.deletions.end();
@@ -147,7 +144,6 @@ void prepare()
         if (name != "")
             deleted_tests.push_back(name);
     }
-
 
     string best_name = "";
     int highest_distance = -1;
@@ -176,9 +172,14 @@ void prepare()
         }
     }
 
-    if (!best_name.empty()) {
-        cerr << best_name << endl;
-    }
+    return best_name;
+}
+
+void prepare()
+{
+    Diff diff = read_diff();
+
+    cerr << best_added_test_name(diff) << endl;
 }
 
 int main(int argc, char *argv[])
