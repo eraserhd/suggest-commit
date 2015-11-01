@@ -68,6 +68,7 @@ std::string test_name(std::string const& line)
     return "";
 }
 
+template <class SystemTraits>
 struct CommitSuggester {
 
     static void install()
