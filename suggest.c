@@ -1,14 +1,8 @@
-#include <algorithm>
-#include <cctype>
-#include <cstdio>
-#include <cstdlib>
-#include <cstring>
-#include <fstream>
-#include <iostream>
-#include <iterator>
+#include <ctype.h>
 #include <regex.h>
-#include <string>
-#include <utility>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 /*****************************************************************************
  * Utilities

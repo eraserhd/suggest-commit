@@ -4,14 +4,14 @@ bin=$(prefix)/bin
 
 all: test suggest-commit
 
-suggest-commit: suggest.cc
-	$(CXX) -g -o suggest-commit suggest.cc
+suggest-commit: suggest.c
+	$(CC) -g -o suggest-commit suggest.c
 
 install: all
 	install -m 0755 suggest-commit $(bin)/
 
 clean:
-	rm -rf suggest-commit tests.cc tests *.dSYM
+	rm -rf suggest-commit *.dSYM
 
 test: suggest-commit
 	@for t in t/*; do \
