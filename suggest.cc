@@ -113,7 +113,7 @@ std::string test_name(std::string const& line)
     return "";
 }
 
-std::string best_added_test_name()
+std::string suggest()
 {
     for (change_t *it = changes; it != NULL; it = it->next) {
         if (it->type == DELETION)
@@ -125,11 +125,6 @@ std::string best_added_test_name()
     }
 
     return "";
-}
-
-std::string suggest()
-{
-    return best_added_test_name();
 }
 
 int main(int argc, char *argv[])
