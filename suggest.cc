@@ -11,6 +11,10 @@
 #include <utility>
 #include <vector>
 
+/*****************************************************************************
+ * Utilities
+ */
+
 int min(int a, int b)
 {
     return (a < b) ? a : b;
@@ -128,17 +132,15 @@ int edit_distance(const char* a, const char* b)
     for (int j = 0; j <= blen; ++j)
         CELL(0,j) = j;
     for (int i = 1; i <= alen; ++i)
-        for (int j = 1; j <= blen; ++j) {
-            CELL(i,j) = CELL(i-1,j) + 1;
-
-            tmp = CELL(j,i-1) + 1;
-            if (tmp < CELL(i,j))
-                CELL(i,j) = tmp;
-
-            tmp = CELL(i-1,j-1) + (a[i-1] != b[j-1]);
-            if (tmp < CELL(i,j))
-                CELL(i,j) = tmp;
-        }
+        for (int j = 1; j <= blen; ++j)
+            CELL(i,j) =
+                min(
+                    min(
+                        CELL(i-1,j) + 1,
+                        CELL(i,j-1) + 1
+                    ),
+                    CELL(i-1,j-1) + (a[i-1] != b[j-1])
+                   );
 
     result = CELL(alen, blen);
 #undef CELL
@@ -156,7 +158,7 @@ std::string suggest()
         if (it->type == DELETION)
             continue;
 
-        if (0 == extract_test_name(test_name, sizeof(test_name), it->line))
+        if (0 == extract_test_name(test_name, sizeof(test_name), it->line)) 
             return test_name;
     }
 
