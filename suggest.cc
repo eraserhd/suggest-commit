@@ -65,8 +65,6 @@ int edit_distance(const char* a, const char* b)
     int *dp = (int *)malloc(sizeof(int) * (alen + 1) * (blen + 1));
     int result, tmp;
 
-    memset(dp, 0, sizeof(int) * (alen + 1) * (blen + 1));
-
 #define CELL(i,j) dp[((i)*(alen+1)+(j))]
     for (int i = 0; i <= alen; ++i)
         CELL(i,0) = i;
