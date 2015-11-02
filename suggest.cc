@@ -74,20 +74,23 @@ void free_diff()
  * Finding and extracting test names
  */
 
-struct test_pattern_tag {
+typedef struct test_pattern_tag {
     const char* pattern;
     regex_t compiled;
-} test_patterns[] = {
+} test_pattern_t;
+
+test_pattern_t test_patterns[] = {
     { "\\s*\\(fact\\s*\"(.*)\"\\s*" },
     { "\\s*void\\s+test_?([A-Za-z0-9_]+)\\s*\\(\\s*\\)\\s*\\{?\\s*" },
+    { NULL }
 };
 
 void compile_test_patterns()
 {
-    int i;
-    for (i = 0; i < sizeof(test_patterns)/sizeof(test_patterns[0]); ++i) {
-        if (regcomp(&test_patterns[i].compiled, test_patterns[i].pattern, REG_EXTENDED|REG_ENHANCED)) {
-            fprintf(stderr, "unable to compile regex `%s'\n", test_patterns[i].pattern);
+    test_pattern_t *p;
+    for (p = test_patterns; p->pattern != NULL; ++p) {
+        if (regcomp(&p->compiled, p->pattern, REG_EXTENDED|REG_ENHANCED)) {
+            fprintf(stderr, "unable to compile regex `%s'\n", p->pattern);
             exit(1);
         }
     }
@@ -95,18 +98,19 @@ void compile_test_patterns()
 
 void free_test_patterns()
 {
-    int i;
-    for (i = 0; i < sizeof(test_patterns)/sizeof(test_patterns[0]); ++i)
-        regfree(&test_patterns[i].compiled);
+    test_pattern_t *p;
+    for (p = test_patterns; p->pattern != NULL; ++p)
+        regfree(&p->compiled);
 }
 
 int extract_test_name(char* name, size_t name_size, char const* line)
 {
-    int i, rc, length;
+    int rc, length;
     regmatch_t matches[2];
+    test_pattern_t *p;
 
-    for (i = 0; i < sizeof(test_patterns)/sizeof(test_patterns[0]); ++i) {
-        rc = regexec(&test_patterns[i].compiled, line, 2, matches, 0);
+    for (p = test_patterns; p->pattern != NULL; ++p) {
+        rc = regexec(&p->compiled, line, 2, matches, 0);
         if (0 == rc) {
             length = min(name_size-1, matches[1].rm_eo - matches[1].rm_so);
             strncpy(name, line + matches[1].rm_so, length);
