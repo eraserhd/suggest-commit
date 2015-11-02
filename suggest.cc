@@ -9,7 +9,6 @@
 #include <regex.h>
 #include <string>
 #include <utility>
-#include <vector>
 
 /*****************************************************************************
  * Utilities
@@ -153,27 +152,28 @@ int edit_distance(const char* a, const char* b)
     return result;
 }
 
-std::string suggest()
+int suggest(char *message, size_t message_size)
 {
-    char test_name[256];
-
     compile_test_patterns();
     for (change_t *it = changes; it != NULL; it = it->next) {
         if (it->type == DELETION)
             continue;
 
-        if (0 == extract_test_name(test_name, sizeof(test_name), it->line)) 
-            return test_name;
+        if (0 == extract_test_name(message, message_size, it->line)) 
+            return 0;
     }
 
     free_test_patterns();
-    return "";
+    return -1;
 }
 
 int main(int argc, char *argv[])
 {
+    char message[256];
+
     parse_diff();
-    std::cout << suggest() << std::endl;
+    if (0 == suggest(message, sizeof(message)))
+        printf("%s\n", message);
     free_diff();
     return 0;
 }
