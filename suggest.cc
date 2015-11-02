@@ -11,6 +11,11 @@
 #include <utility>
 #include <vector>
 
+int min(int a, int b)
+{
+    return (a < b) ? a : b;
+}
+
 /*****************************************************************************
  * Parsing and representation of diffs
  */
@@ -91,19 +96,22 @@ void free_test_patterns()
         regfree(&test_patterns[i].compiled);
 }
 
-std::string test_name(std::string const& line)
+int extract_test_name(char* name, size_t name_size, char const* line)
 {
-    int i, rc;
+    int i, rc, length;
     regmatch_t matches[2];
 
     for (i = 0; i < sizeof(test_patterns)/sizeof(test_patterns[0]); ++i) {
-        rc = regexec(&test_patterns[i].compiled, line.c_str(), 2, matches, 0);
+        rc = regexec(&test_patterns[i].compiled, line, 2, matches, 0);
         if (0 == rc) {
-            return line.substr(matches[1].rm_so, matches[1].rm_eo - matches[1].rm_so);
+            length = min(name_size-1, matches[1].rm_eo - matches[1].rm_so);
+            strncpy(name, line + matches[1].rm_so, length);
+            name[length] = '\0';
+            return 0;
         }
     }
 
-    return "";
+    return -1;
 }
 
 
@@ -141,14 +149,15 @@ int edit_distance(const char* a, const char* b)
 
 std::string suggest()
 {
+    char test_name[256];
+
     compile_test_patterns();
     for (change_t *it = changes; it != NULL; it = it->next) {
         if (it->type == DELETION)
             continue;
 
-        std::string name = test_name(it->line);
-        if (name != "")
-            return name;
+        if (0 == extract_test_name(test_name, sizeof(test_name), it->line))
+            return test_name;
     }
 
     free_test_patterns();
