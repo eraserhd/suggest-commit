@@ -1,0 +1,16 @@
+#!/bin/sh
+
+result=`./suggest-commit <<EOF
++    void test_It_works_yo() {
++      TS_ASSERT(true);
++    }
+-    void test_It_worxs_yo() {
+-      TS_ASSERT(true);
+-    }
++    void test_A_second_test() {
++      TS_ASSERT(true);
++    }
+EOF
+`
+
+[ "$result" = "A second test" ] || exit 1

@@ -168,17 +168,43 @@ int edit_distance(const char* a, const char* b)
 
 int suggest(char *message, size_t message_size)
 {
-    compile_test_patterns();
-    for (change_t *it = changes; it != NULL; it = it->next) {
-        if (it->type == DELETION)
-            continue;
+	change_t *add;
+	change_t *del;
+	char add_name[256];
+	char del_name[256];
+	int distance;
+	int smallest_del_distance;
+	int least_likely_del_distance = -1;
+	int found = 0;
 
-        if (0 == extract_test_name(message, message_size, it->line)) 
-            return 0;
-    }
+	compile_test_patterns();
+	for (add = changes; add; add = add->next) {
+		if (add->type == DELETION)
+			continue;
+		if (0 != extract_test_name(add_name, sizeof(add_name), add->line)) 
+			continue;
 
-    free_test_patterns();
-    return -1;
+		smallest_del_distance = 9999999;
+		for (del = changes; del; del = del->next) {
+			if (del->type == ADDITION)
+				continue;
+			if (0 != extract_test_name(del_name, sizeof(del_name), del->line))
+				continue;
+
+			distance = edit_distance(add_name, del_name);
+			if (distance < smallest_del_distance)
+				smallest_del_distance = distance;
+		}
+
+		if (smallest_del_distance > least_likely_del_distance) {
+			strncpy(message, add_name, message_size);
+			least_likely_del_distance = smallest_del_distance;
+			found = 1;
+		}
+	}
+
+	free_test_patterns();
+	return found ? 0 : -1;
 }
 
 /*****************************************************************************
