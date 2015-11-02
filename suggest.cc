@@ -115,46 +115,16 @@ std::string test_name(std::string const& line)
 
 std::string best_added_test_name()
 {
-    std::vector<std::string> deleted_tests;
     for (change_t *it = changes; it != NULL; it = it->next) {
         if (it->type == DELETION)
             continue;
-
 
         std::string name = test_name(it->line);
         if (name != "")
-            deleted_tests.push_back(name);
+            return name;
     }
 
-    std::string best_name = "";
-    int highest_distance = -1;
-
-    for (change_t *it = changes; it != NULL; it = it->next) {
-        if (it->type == DELETION)
-            continue;
-
-        std::string name = test_name(it->line);
-        if (name.empty())
-            continue;
-
-
-        int lowest = 99999999;
-        for (std::vector<std::string>::const_iterator dptr = deleted_tests.begin();
-             dptr != deleted_tests.end();
-             ++dptr)
-        {
-            int d = edit_distance(name.c_str(), dptr->c_str());
-            if (d < lowest)
-                lowest = d;
-        }
-
-        if (lowest > highest_distance) {
-            best_name = name;
-            highest_distance = lowest;
-        }
-    }
-
-    return best_name;
+    return "";
 }
 
 std::string suggest()
