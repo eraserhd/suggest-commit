@@ -12,22 +12,49 @@
 #include <utility>
 #include <vector>
 
-std::vector<std::string> additions;
-std::vector<std::string> deletions;
+typedef enum type_tag {
+    DELETION = -1,
+    ADDITION = 1
+} type_t;
+
+typedef struct change_tag {
+    struct change_tag * next;
+    type_t              type;
+    char                line[1];
+} change_t;
+
+static change_t *changes = NULL;
+static change_t **next_change = &changes;
 
 void parse_diff()
 {
     char line[256];
+    char *nl;
 
     while (NULL != fgets(line, sizeof(line), stdin)) {
-        switch (line[0]) {
-        case '+':
-            additions.push_back(line+1);
-            break;
-        case '-':
-            deletions.push_back(line+1);
-            break;
-        }
+        if (line[0] != '+' && line[0] != '-')
+            continue;
+
+        if ((nl = strpbrk(line, "\r\n")))
+            *nl = '\0';
+
+        *next_change = (change_t *)malloc(sizeof(change_t) + strlen(line));
+        (*next_change)->next = NULL;
+        (*next_change)->type = (line[0] == '+') ? ADDITION : DELETION;
+        strcpy((*next_change)->line, line+1);
+
+        next_change = &(*next_change)->next;
+    }
+}
+
+void free_diff()
+{
+    change_t *p;
+
+    while (changes != NULL) {
+        p = changes;
+        changes = changes->next;
+        free(p);
     }
 }
 
@@ -89,11 +116,12 @@ std::string test_name(std::string const& line)
 std::string best_added_test_name()
 {
     std::vector<std::string> deleted_tests;
-    for (std::vector<std::string>::const_iterator it = deletions.begin();
-         it != deletions.end();
-         ++it)
-    {
-        std::string name = test_name(*it);
+    for (change_t *it = changes; it != NULL; it = it->next) {
+        if (it->type == DELETION)
+            continue;
+
+
+        std::string name = test_name(it->line);
         if (name != "")
             deleted_tests.push_back(name);
     }
@@ -101,11 +129,11 @@ std::string best_added_test_name()
     std::string best_name = "";
     int highest_distance = -1;
 
-    for (std::vector<std::string>::const_iterator it = additions.begin();
-         it != additions.end();
-         ++it)
-    {
-        std::string name = test_name(*it);
+    for (change_t *it = changes; it != NULL; it = it->next) {
+        if (it->type == DELETION)
+            continue;
+
+        std::string name = test_name(it->line);
         if (name.empty())
             continue;
 
@@ -138,5 +166,6 @@ int main(int argc, char *argv[])
 {
     parse_diff();
     std::cout << suggest() << std::endl;
+    free_diff();
     return 0;
 }
