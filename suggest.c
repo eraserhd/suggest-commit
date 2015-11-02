@@ -115,6 +115,8 @@ int extract_test_name(char* name, size_t name_size, char const* line)
     return -1;
 }
 
+/*****************************************************************************
+ */
 
 int edit_distance(const char* a, const char* b)
 {
@@ -160,6 +162,10 @@ int suggest(char *message, size_t message_size)
     free_test_patterns();
     return -1;
 }
+
+/*****************************************************************************
+ * Main!
+ */
 
 int main(int argc, char *argv[])
 {
