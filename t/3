@@ -1,0 +1,10 @@
+#!/bin/sh
+
+result=`./suggest-commit <<EOF
++    void test_It_works_yo() {
++      TS_ASSERT(true);
++    }
+EOF
+`
+
+[ "$result" = "It works yo" ] || exit 1

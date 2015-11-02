@@ -69,13 +69,30 @@ void free_diff()
 
 typedef struct test_pattern_tag {
     const char* pattern;
+    void (* name_formatter) (char *name);
     regex_t compiled;
 } test_pattern_t;
 
+static void format_string_name(char *name)
+{
+}
+
+static void format_xunit_name(char *name)
+{
+	char *p;
+	for (p = name; *p; ++p)
+		if (*p == '_')
+			*p = ' ';
+}
+
 test_pattern_t test_patterns[] = {
-    { "\\s*\\(fact\\s*\"(.*)\"\\s*" },
-    { "\\s*void\\s+test_?([A-Za-z0-9_]+)\\s*\\(\\s*\\)\\s*\\{?\\s*" },
-    { NULL }
+	{ "\\s*\\(fact\\s*\"(.*)\"\\s*",
+          format_string_name
+	},
+	{ "\\s*void\\s+test_?([A-Za-z0-9_]+)\\s*\\(\\s*\\)\\s*\\{?\\s*",
+	  format_xunit_name
+	},
+	{ NULL }
 };
 
 void compile_test_patterns()
@@ -108,6 +125,7 @@ int extract_test_name(char* name, size_t name_size, char const* line)
             length = min(name_size-1, matches[1].rm_eo - matches[1].rm_so);
             strncpy(name, line + matches[1].rm_so, length);
             name[length] = '\0';
+	    p->name_formatter(name);
             return 0;
         }
     }
