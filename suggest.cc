@@ -3,14 +3,17 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include <exception>
 #include <fstream>
 #include <iostream>
 #include <iterator>
-#include <regex>
+#include <regex.h>
 #include <string>
 #include <utility>
 #include <vector>
+
+/*****************************************************************************
+ * Parsing and representation of diffs
+ */
 
 typedef enum type_tag {
     DELETION = -1,
@@ -58,6 +61,52 @@ void free_diff()
     }
 }
 
+/*****************************************************************************
+ * Finding and extracting test names
+ */
+
+struct test_pattern_tag {
+    const char* pattern;
+    regex_t compiled;
+} test_patterns[] = {
+    { "\\s*\\(fact\\s*\"(.*)\"\\s*" },
+    { "\\s*void\\s+test_?([A-Za-z0-9_]+)\\s*\\(\\s*\\)\\s*\\{?\\s*" },
+};
+
+void compile_test_patterns()
+{
+    int i;
+    for (i = 0; i < sizeof(test_patterns)/sizeof(test_patterns[0]); ++i) {
+        if (regcomp(&test_patterns[i].compiled, test_patterns[i].pattern, REG_EXTENDED|REG_ENHANCED)) {
+            fprintf(stderr, "unable to compile regex `%s'\n", test_patterns[i].pattern);
+            exit(1);
+        }
+    }
+}
+
+void free_test_patterns()
+{
+    int i;
+    for (i = 0; i < sizeof(test_patterns)/sizeof(test_patterns[0]); ++i)
+        regfree(&test_patterns[i].compiled);
+}
+
+std::string test_name(std::string const& line)
+{
+    int i, rc;
+    regmatch_t matches[2];
+
+    for (i = 0; i < sizeof(test_patterns)/sizeof(test_patterns[0]); ++i) {
+        rc = regexec(&test_patterns[i].compiled, line.c_str(), 2, matches, 0);
+        if (0 == rc) {
+            return line.substr(matches[1].rm_so, matches[1].rm_eo - matches[1].rm_so);
+        }
+    }
+
+    return "";
+}
+
+
 int edit_distance(const char* a, const char* b)
 {
     int alen = strlen(a);
@@ -90,29 +139,9 @@ int edit_distance(const char* a, const char* b)
     return result;
 }
 
-std::string decode_JUnit_style_name(std::string const& name)
-{
-    std::string result(name);
-    std::replace(result.begin(), result.end(), '_', ' ');
-    return result;
-}
-
-std::string test_name(std::string const& line)
-{
-    static const std::regex midje_fact("\\s*\\(fact\\s*\"(.*)\"\\s*");
-    static const std::regex cxxtest_fact("\\s*void\\s+test_?([A-Za-z0-9_]+)\\s*\\(\\s*\\)\\s*\\{?\\s*");
-
-    std::smatch matches;
-    if (std::regex_match(line, matches, midje_fact))
-        return matches.str(1);
-    if (std::regex_match(line, matches, cxxtest_fact))
-        return decode_JUnit_style_name(matches.str(1));
-
-    return "";
-}
-
 std::string suggest()
 {
+    compile_test_patterns();
     for (change_t *it = changes; it != NULL; it = it->next) {
         if (it->type == DELETION)
             continue;
@@ -122,6 +151,7 @@ std::string suggest()
             return name;
     }
 
+    free_test_patterns();
     return "";
 }
 
