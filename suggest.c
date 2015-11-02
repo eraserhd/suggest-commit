@@ -134,6 +134,7 @@ int extract_test_name(char* name, size_t name_size, char const* line)
 }
 
 /*****************************************************************************
+ * Identifying the best test name
  */
 
 int edit_distance(const char* a, const char* b)
