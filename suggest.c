@@ -33,23 +33,34 @@ static change_t **next_change = &changes;
 
 void parse_diff()
 {
-    char line[256];
-    char *nl;
+	char line[256];
+	char *nl;
+	int in_header = 0;
 
-    while (NULL != fgets(line, sizeof(line), stdin)) {
-        if (line[0] != '+' && line[0] != '-')
-            continue;
+	while (NULL != fgets(line, sizeof(line), stdin)) {
+		if (in_header) {
+			if (line[0] == '+')
+				in_header = 0;
+			continue;
+		}
+		if (line[0] == 'd') {
+			in_header = 1;
+			continue;
+		}
 
-        if ((nl = strpbrk(line, "\r\n")))
-            *nl = '\0';
+		if (line[0] != '+' && line[0] != '-')
+		    continue;
 
-        *next_change = (change_t *)malloc(sizeof(change_t) + strlen(line));
-        (*next_change)->next = NULL;
-        (*next_change)->type = (line[0] == '+') ? ADDITION : DELETION;
-        strcpy((*next_change)->line, line+1);
+		if ((nl = strpbrk(line, "\r\n")))
+		    *nl = '\0';
 
-        next_change = &(*next_change)->next;
-    }
+		*next_change = (change_t *)malloc(sizeof(change_t) + strlen(line));
+		(*next_change)->next = NULL;
+		(*next_change)->type = (line[0] == '+') ? ADDITION : DELETION;
+		strcpy((*next_change)->line, line+1);
+
+		next_change = &(*next_change)->next;
+	}
 }
 
 void free_diff()
