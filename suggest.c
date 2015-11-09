@@ -75,6 +75,19 @@ typedef struct test_pattern_tag {
 
 static void format_string_name(char *name)
 {
+	char *src;
+	char *dst;
+
+	for (src = dst = name; *src; ++src) {
+		if (*src == '\\') {
+			++src;
+			if (*src == '\0')
+				break;
+		}
+
+		*dst++ = *src;
+	}
+	*dst = '\0';
 }
 
 static void format_xunit_name(char *name)

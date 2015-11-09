@@ -1,0 +1,9 @@
+#!/bin/sh
+
+result=`./suggest-commit <<"EOF"
++    (fact "midje \"is\"\\\\ awesome!" 
++      (+ 2 2) => 4)
+EOF
+`
+
+[ "$result" = 'midje "is"\ awesome!' ] || exit 1
