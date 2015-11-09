@@ -1,0 +1,13 @@
+#!/bin/sh
+
+result=`./suggest-commit <<EOF
+-  void hello()  {
+-  }
+-      hello();
++  void goodbye()  {
++  }
++      goodbye();
+EOF
+`
+
+[ "$result" = 'Rename `hello` to `goodbye`' ] || exit 1

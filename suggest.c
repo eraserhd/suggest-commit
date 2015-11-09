@@ -180,7 +180,7 @@ int edit_distance(const char* a, const char* b)
     return result;
 }
 
-int suggest(char *message, size_t message_size)
+int suggest_test_name(char *message, size_t message_size)
 {
 	change_t *add;
 	change_t *del;
@@ -222,8 +222,144 @@ int suggest(char *message, size_t message_size)
 }
 
 /*****************************************************************************
+ * Detecting renames
+ */
+
+typedef struct token_tag {
+	struct token_tag *next;
+	char token[1];
+} token_t;
+
+const char WORD_CHARS[] =
+	"abcdefghijklmnopqrstuvwxyz"
+	"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+	"0123456789_-?!";
+
+int iswordchar(char c)
+{
+	return !!strchr(WORD_CHARS, c);
+}
+
+void add_token(token_t** tokens, char *text)
+{
+	token_t *t = malloc(sizeof(token_t) + strlen(text));
+	strcpy(t->token, text);
+	t->next = *tokens;
+	*tokens = t;
+}
+
+token_t *tokenize(type_t type)
+{
+	token_t *result = NULL;
+	change_t *change;
+	char single_char_token[2] = {'\0', '\0'};
+	char *start;
+	char *token;
+	size_t length;
+
+	for (change = changes; change; change = change->next) {
+		if (change->type != type)
+			continue;
+
+		start = change->line;
+
+		while (*start) {
+			while (*start && isspace(*start))
+				++start;
+			if (!*start)
+				break;
+
+			length = strspn(start, WORD_CHARS);
+			if (length == 0) {
+				single_char_token[0] = *start;
+				add_token(&result, single_char_token);
+				++start;
+			} else {
+				token = (char *)malloc(length+1);
+				strncpy(token, start, length);
+				token[length] = '\0';
+				add_token(&result, token);
+				free(token);
+				start += length;
+			}
+		}
+
+	}
+
+	return result;
+}
+
+void free_tokens(token_t *tokens)
+{
+	token_t *tmp;
+
+	while (tokens) {
+		tmp = tokens->next;
+		free(tokens);
+		tokens = tmp;
+	}
+}
+
+int suggest_rename(char *message, size_t message_size)
+{
+	token_t *addition_tokens = tokenize(ADDITION);
+	token_t *deletion_tokens = tokenize(DELETION);
+	token_t *a;
+	token_t *d;
+	char *found_a;
+	char *found_d;
+	int found = 0;
+	int consistent;
+
+	a = addition_tokens;
+	d = deletion_tokens;
+	while (a && d) {
+		consistent = 0;
+		if (found) {
+			consistent = !strcmp(a->token, found_a) &&
+				     !strcmp(d->token, found_d);
+		}
+
+		if (strcmp(a->token, d->token) && !consistent) {
+
+			if (!found) {
+				found = 1;
+				found_a = a->token;
+				found_d = d->token;
+				snprintf(message,
+					 message_size,
+					 "Rename `%s` to `%s`",
+					 d->token,
+					 a->token);
+			} else {
+				found = 0;
+				goto fail;
+			}
+		}
+
+		a = a->next;
+		d = d->next;
+	}
+
+	if (a || d)
+		found = 0;
+
+fail:
+	free_tokens(addition_tokens);
+	free_tokens(deletion_tokens);
+	return found ? 0 : -1;
+}
+
+/*****************************************************************************
  * Main!
  */
+
+int suggest(char *message, size_t message_size)
+{
+	if (0 == suggest_rename(message, message_size))
+		return 0;
+	return suggest_test_name(message, message_size);
+}
 
 int main(int argc, char *argv[])
 {
