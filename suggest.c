@@ -110,7 +110,7 @@ static void format_xunit_name(char *name)
 }
 
 test_pattern_t test_patterns[] = {
-	{ "\\s*\\(fact\\s*\"(.*)\"\\s*",
+	{ "\\s*\\((?:fact|property)\\s*\"(.*)\"\\s*",
           format_string_name
 	},
 	{ "\\s*void\\s+test_?([A-Za-z0-9_]+)\\s*\\(\\s*\\)\\s*\\{?\\s*",
